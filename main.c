@@ -23,6 +23,8 @@
 #define MISSING_DEVICE_RETRY 3
 
 const char* randomSeedFilename = RANDOM_SEED_FILENAME;
+const char* logFile = "/var/log/devcrond.log";
+const char* errLogFile = "/var/log/devcrond-err.log";
 const char* devicesDir = "/mnt/devices";
 const char* timersDir = "/www/lights/timers";
 const char* backupTimersDir = "/www/lights/timers-ro";
@@ -88,7 +90,7 @@ int randImpl(int range)
 			fd = open(randomSeedFilename, O_WRONLY | O_CREAT, 0644);
 			write(fd, &seed, sizeof(seed));
 			close(fd);
-			//~ printf("wrote new random seed %d\n", seed);
+			printf("wrote new random seed %d\n", seed);
 		}
 		if (!seedInited)
 		{
@@ -155,7 +157,7 @@ void onOff(const char* device, int state, bool log)
 {
 	char devPath[256];
 	if (log)
-		printf("      let's do it! %d -> %s\n", state, device);
+		printf("%02d:%02d let's do it! %d -> %s\n", currentHour, currentMinute, state, device);
 	snprintf(devPath, 256, "%s/%s", devicesDir, device);
 	int deviceType = checkDeviceType(devPath);
 
@@ -342,9 +344,9 @@ int main()
 	// If it exceeds MISSING_DEVICE_RETRY we will reboot.
 	int problemDeviceCount = 0;
 
-	// Redirect stdout to a log file
-	freopen("/var/log/devcrond", "w", stdout);
-	freopen("/var/log/devcrond", "w", stderr);
+	// Redirect stdout and stderr to a log file
+	freopen(logFile, "w", stdout);
+	freopen(errLogFile, "w", stderr);
 
 	while (1)
 	{
@@ -362,14 +364,16 @@ int main()
 		//~ printf("\n");
 		if (D != startDay)
 		{
-			printf("It's a brand-new day!\n");
 			strftime(weekday, 32, "%A", tmp);
 			weekday[0] = tolower(weekday[0]);	// Not for UTF-8 though
 			riseset(LATITUDE, LONGITUDE, TIMEZONE, Y, M, D, itrash, sunrise, ftrash,  itrash, sunset, ftrash, itrash);
 			startDay = D;
+			fflush(stderr);
+			fflush(stdout);
+			printf("Local time is %s %d/%02d/%02d %02d:%02d:%02d\n", weekday, Y, M, D, currentHour, currentMinute, tmp->tm_sec);
+			printf("sunrise %f sunset %f\n", sunrise, sunset);
+			fflush(stdout);
 		}
-		//~ printf("Local time is %s %d/%02d/%02d %02d:%02d:%02d\n", weekday, Y, M, D, currentHour, currentMinute, tmp->tm_sec);
-		//~ printf("sunrise %f sunset %f\n", sunrise, sunset);
 
 		// Check all devices to make sure they exist.
 		// If they don't, for MISSING_DEVICE_RETRY minutes in a row, then reboot.
