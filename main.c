@@ -19,13 +19,13 @@
 #define TIMEZONE -7 		// could get the system value for that
 #define MAXRAND 100	// how many unique random values will we use?
 										// Beyond this, they're
-#define RANDOM_SEED_FILENAME "/var/tmp/devcron-random-seed"
+#define RANDOM_SEED_FILENAME "/tmp/devcron-random-seed"
 #define MISSING_DEVICE_RETRY 3
 
 const char* randomSeedFilename = RANDOM_SEED_FILENAME;
-const char* devicesDir = "/mnt/x10";
-const char* timersDir = "/var/www/lights/timers";
-const char* backupTimersDir = "/var/www/lights/timers-ro";
+const char* devicesDir = "/mnt/devices";
+const char* timersDir = "/www/lights/timers";
+const char* backupTimersDir = "/www/lights/timers-ro";
 const char* rebootCommand = "/sbin/shutdown -r +1 &";
 int Y = -1;
 int M = -1;
