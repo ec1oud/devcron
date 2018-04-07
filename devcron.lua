@@ -1,9 +1,11 @@
+#!/usr/bin/lua
 -- configuration
 locationInfo = {lat=33.4827, lon=-112.0321, offset=-7} -- Phoenix
 --~ locationInfo = {lat=59.9126, lon=10.7399, offset=2} -- Oslo
-poolPumpOnTime = 20 -- hours and fractions
+poolPumpOnTime = 20 -- hours and fractions: e.g. 20.5 would mean 8:30 PM
 
 -- variables
+hoursToSeconds = 3600
 dayOfYear = -1
 sunrise = 0
 sunriseHour = 0
@@ -11,7 +13,10 @@ sunset = 0
 sunsetHour = 0
 buttonState = false
 relayState = false
+relayOverridden = false
 poolPumpOffTime = 6
+poolPumpOnTimeToday = 0
+poolPumpOffTimeToday = 0
 
 -- helpers
 local function readGpioState(name)
@@ -22,7 +27,9 @@ local function readGpioState(name)
 end
 
 local function setRelay(state)
-	print(os.date("%x %H:%M"), "setRelay", state)
+	if (relayState ~= state) then
+		print(os.date("%x %H:%M"), os.time(), "setRelay", state, (relayOverridden and "overridden") or "")
+	end
 	local relayf = assert(io.open("/sys/class/gpio/relay1/value", "w"))
 	local stateString = (state and "1") or "0"
 	relayf:write(stateString)
@@ -48,9 +55,9 @@ local function poolOffTimeCalculator(startTime)
 	local runTime = minMax(6, 12, (sunsetHour - sunriseHour - 8) * 1.5)
 	local ret = startTime + runTime
 	-- But if we go past midnight, convert to time of the next day.
-	if (ret >= 24) then
-		ret = ret - 24
-	end
+--~ 	if (ret >= 24) then
+--~ 		ret = ret - 24
+--~ 	end
 	print("pool pump starting", startTime, "running", runTime, "ending", ret)
 	return ret
 end
@@ -61,7 +68,7 @@ end
 
 -- main
 lustrous = require "lustrous"
-relayState = readGpioState("relay1")
+--~ relayState = readGpioState("relay1")
 
 while true do
 	local nowTime = os.time()
@@ -70,6 +77,12 @@ while true do
 	local doy = lustrous.day_of_year(now)
 	if (doy ~= dayOfYear) then
 		dayOfYear = doy
+		local startOfToday = os.date("*t", nowTime)
+		startOfToday.hour = 0
+		startOfToday.min = 0
+		startOfToday.sec = 0
+		startOfTodayTime = os.time(startOfToday)
+		print("today began at", startOfTodayTime, "now is", nowTime)
 		sunrise, sunset, lengthHours, lengthMinutes = lustrous.get(locationInfo)
 		sunriseHour = timestampToHour(sunrise)
 		sunsetHour = timestampToHour(sunset)
@@ -77,18 +90,25 @@ while true do
 			"sunrise", os.date("%x %H:%M", sunrise), sunriseHour, "sunset", os.date("%x %H:%M", sunset), sunsetHour,
 			"length of day", lengthHours .. ":" .. lengthMinutes, "relay", relayState)
 		poolPumpOffTime = poolOffTimeCalculator(poolPumpOnTime)
-		print("pool pump should turn on at", poolPumpOnTime, "off at", poolPumpOffTime)
+		poolPumpOnTimeToday = startOfTodayTime + poolPumpOnTime * hoursToSeconds
+		poolPumpOffTimeToday = startOfTodayTime + poolPumpOffTime * hoursToSeconds
+
+--~ 		if (poolPumpOffTimeToday < poolPumpOnTimeToday) then
+--~ 			poolPumpOffTimeToday = poolPumpOffTimeToday + hoursToSeconds  * 24
+--~ 		end
+		relayOverridden = false
+		print("pool pump should turn on at", poolPumpOnTime, poolPumpOnTimeToday, "from now", (poolPumpOnTimeToday - nowTime),
+			"off at", poolPumpOffTime, poolPumpOffTimeToday, "from now", (poolPumpOffTimeToday - nowTime), "runtime", poolPumpOffTimeToday - poolPumpOnTimeToday)
 	end
-	if (sameMinute(poolPumpOnTime, nowHour)) then
-		setRelay(true)
-	elseif (sameMinute(poolPumpOffTime, nowHour)) then
-		setRelay(false)
+	if (not relayOverridden) then
+		setRelay(nowTime > poolPumpOnTimeToday and nowTime < poolPumpOffTimeToday)
 	end
 	local buttonStateNow = readGpioState("button")
 	if (buttonState ~= buttonStateNow) then
 --~ 		print("button", buttonStateNow)
 		buttonState = buttonStateNow
 		if (buttonStateNow) then
+			relayOverridden = true
 			setRelay(not relayState)
 		end
 	end

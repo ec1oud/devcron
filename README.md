@@ -16,10 +16,11 @@ compiler is not, and in fact gcc takes up more space in flash memory than most
 routers have available.  (Why does OpenWRT not include a small compiler, like tcc?)
 
 An Olimex [RT5350F EVB](https://www.olimex.com/Products/OLinuXino/RT5350F/RT5350F-OLinuXino-EVB/)
-is a nice board for this purpose: it has 32MB of memory (so, enough to handle
-some light scripting), two relays which can be directly controlled via Linux
-GPIO, USB (perhaps for an interface to a one-wire network, X10 or some such),
-dual ethernet, WiFi, and a low price.  It could be used directly as a
-thermostat, pool pump controller or the like, as well as the central node of a
-home automation or security system.
+is a nice board for this purpose: it has 32MB of memory (so, more than enough
+to handle some light scripting), two relays which can be directly controlled
+via Linux GPIO, USB (perhaps for an interface to a one-wire network, X10 or
+some such), dual ethernet, WiFi, and a low price.  It could be used directly as
+a thermostat, pool pump controller or the like, as well as the central node of
+a home automation or security system, and even act as a WiFi range extender
+at the same time.
 
