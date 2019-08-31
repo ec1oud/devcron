@@ -24,3 +24,14 @@ a thermostat, pool pump controller or the like, as well as the central node of
 a home automation or security system, and even act as a WiFi range extender
 at the same time.
 
+devcron.lua is a daemon meant to run indefinitely.  But keeping processes
+running indefinitely is another problem... so perhaps it's better to use
+cron which is already reliable enough to stay running indefinitely.
+
+periodic.lua is a script meant to run from a cron job, perhaps every minute
+or every 5 minutes or something like that.  Currently it calculates sunrise
+and sunset times, calculates a suitable amount of time for the pool pump to run,
+decides whether at this time the pump should be running or not, checks the
+state of the relay, changes state if necessary, and when state changes,
+logs it to an influxdb instance.
+
