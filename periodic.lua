@@ -62,7 +62,7 @@ end
 
 local function setRelay(state)
 	if (relayState ~= state) then
-		print(os.date("%x %H:%M"), os.time(), "setRelay", (relayState and "on" or "off"))
+		print(os.date("%F %H:%M"), os.time(), "setRelay", (relayState and "on" or "off"))
 		logInfluxRelayState(state)
 	end
 	local relayf = assert(io.open("/sys/class/gpio/relay1/value", "w"))
@@ -119,9 +119,9 @@ if (doy ~= dayOfYear) then
 	sunriseHour = timestampToHour(sunrise)
 	sunsetHour = timestampToHour(sunset)
 	lengthHours = - lengthHours
-	print("as of", os.date("%x %H:%M", nowTime), nowHour,
+	print("as of", os.date("%F %H:%M", nowTime), nowHour,
 	    "uptime", readUptime(),
-		"sunrise", os.date("%x %H:%M", sunrise), sunriseHour, "sunset", os.date("%x %H:%M", sunset), sunsetHour,
+		"sunrise", os.date("%F %H:%M", sunrise), sunriseHour, "sunset", os.date("%F %H:%M", sunset), sunsetHour,
 		"length of day", lengthHours .. ":" .. lengthMinutes, "relay", (relayState and "on" or "off"))
 	poolPumpOffTime = poolOffTimeCalculator(poolPumpOnTime)
 	poolPumpOnTimeToday = startOfTodayTime + poolPumpOnTime * hoursToSeconds

@@ -28,7 +28,7 @@ end
 
 local function setRelay(state)
 	if (relayState ~= state) then
-		print(os.date("%x %H:%M"), os.time(), "setRelay", state, (relayOverridden and "overridden") or "")
+		print(os.date("%F %H:%M"), os.time(), "setRelay", state, (relayOverridden and "overridden") or "")
 	end
 	local relayf = assert(io.open("/sys/class/gpio/relay1/value", "w"))
 	local stateString = (state and "1") or "0"
@@ -86,8 +86,8 @@ while true do
 		sunrise, sunset, lengthHours, lengthMinutes = lustrous.get(locationInfo)
 		sunriseHour = timestampToHour(sunrise)
 		sunsetHour = timestampToHour(sunset)
-		print("as of", os.date("%x %H:%M", nowTime), nowHour,
-			"sunrise", os.date("%x %H:%M", sunrise), sunriseHour, "sunset", os.date("%x %H:%M", sunset), sunsetHour,
+		print("as of", os.date("%F %H:%M", nowTime), nowHour,
+			"sunrise", os.date("%F %H:%M", sunrise), sunriseHour, "sunset", os.date("%F %H:%M", sunset), sunsetHour,
 			"length of day", lengthHours .. ":" .. lengthMinutes, "relay", relayState)
 		poolPumpOffTime = poolOffTimeCalculator(poolPumpOnTime)
 		poolPumpOnTimeToday = startOfTodayTime + poolPumpOnTime * hoursToSeconds
