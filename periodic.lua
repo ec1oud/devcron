@@ -20,15 +20,19 @@ buttonState = false
 relayState = false
 poolRunTime = 0
 poolPumpOffTime = 6
+startOfTodayTime = 0
+startOfYesterdayTime = 0
 poolPumpOnTimeToday = 0
 poolPumpOffTimeToday = 0
+poolPumpOnTimeYesterday = 0
+poolPumpOffTimeYesterday = 0
 
 -- helpers
 print = function(...) io.write(table.concat({...}, "\t")) io.write("\n") end
 
-local function readUptime()
+local function readUptime() -- in days
 	local f = assert(io.open("/proc/uptime", "r"))
-	local s = tonumber(f:read("*n"))
+	local s = tonumber(f:read("*n")) / hoursToSeconds / 24
 	f:close()
 	return s
 end
@@ -114,7 +118,8 @@ if (doy ~= dayOfYear) then
 	startOfToday.min = 0
 	startOfToday.sec = 0
 	startOfTodayTime = os.time(startOfToday)
-	print("today began at", startOfTodayTime, "now is", nowTime)
+	startOfYesterdayTime = startOfTodayTime - (hoursToSeconds * 24)
+	print("yesterday began at", startOfYesterdayTime, "today began at", startOfTodayTime, "now is", nowTime)
 	sunrise, sunset, lengthHours, lengthMinutes = lustrous.get(locationInfo)
 	sunriseHour = timestampToHour(sunrise)
 	sunsetHour = timestampToHour(sunset)
@@ -126,7 +131,9 @@ if (doy ~= dayOfYear) then
 	poolPumpOffTime = poolOffTimeCalculator(poolPumpOnTime)
 	poolPumpOnTimeToday = startOfTodayTime + poolPumpOnTime * hoursToSeconds
 	poolPumpOffTimeToday = startOfTodayTime + poolPumpOffTime * hoursToSeconds
-	print("pool pump should turn on at", poolPumpOnTime, poolPumpOnTimeToday, "from now", (poolPumpOnTimeToday - nowTime),
-		"off at", poolPumpOffTime, poolPumpOffTimeToday, "from now", (poolPumpOffTimeToday - nowTime), "runtime", poolPumpOffTimeToday - poolPumpOnTimeToday)
+	poolPumpOnTimeYesterday = startOfYesterdayTime + poolPumpOnTime * hoursToSeconds
+	poolPumpOffTimeYesterday = startOfYesterdayTime + poolPumpOffTime * hoursToSeconds
+	print("pool pump on at", poolPumpOnTimeYesterday, poolPumpOnTimeToday, "from now", (poolPumpOnTimeToday - nowTime),
+		"off at", poolPumpOffTimeYesterday, poolPumpOffTimeToday, "from now", (poolPumpOffTimeToday - nowTime), "runtime", poolPumpOffTimeToday - poolPumpOnTimeToday)
 end
-setRelay(nowTime > poolPumpOnTimeToday and nowTime < poolPumpOffTimeToday)
+setRelay((nowTime > poolPumpOnTimeYesterday and nowTime < poolPumpOffTimeYesterday) or (nowTime > poolPumpOnTimeToday and nowTime < poolPumpOffTimeToday))
