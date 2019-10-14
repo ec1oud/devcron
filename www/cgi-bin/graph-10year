@@ -1,0 +1,29 @@
+#!/usr/bin/lua
+require("luci.util")
+
+cmdline = { "rrdtool", "graph" }
+opts = { '/tmp/rrdimg/pool/exec-pool/graph-10year.png', '-a', 'PNG', '-s', 'NOW-315360000', '-w', '1000',
+        '-x', 'MONTH:1:YEAR:1:YEAR:1:157680000:%Y', '-c', 'GRID#DDDDDD',
+	'-t', 'pool: Pump current consumption (10 years)', '-v', 'Amperes RMS',
+	'DEF:1current_avg_raw=/mnt/sda1/pool/exec-pool/current-pump.rrd:value:AVERAGE',
+	'CDEF:1current_avg=1current_avg_raw,0,+', 'CDEF:1current_nnl=1current_avg,UN,0,1current_avg,IF',
+	'CDEF:1current_stk=1current_nnl', 'CDEF:1current_plot=1current_avg',
+	'AREA:1current_plot#bfffbf', 'LINE1:1current_plot#00ff00:Pool pump current' }
+
+for i, opt in ipairs(opts) do
+	cmdline[#cmdline+1] = luci.util.shellquote(opt .. "")
+end
+
+outfile = io.open("/tmp/rrdtool-cmd", "w+")
+outfile:write(table.concat(cmdline, " "))
+outfile:close()
+local rrdtool = io.popen(table.concat(cmdline, " "))
+rrdtool:close()
+
+local png = io.open("/tmp/rrdimg/pool/exec-pool/graph-10year.png", "r")
+if png then
+	local content = png:read("*all")
+	io.write("Content-Type: image/png\r\n")
+	io.write("\r\n")
+	io.write(content)
+end
