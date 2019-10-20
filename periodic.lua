@@ -7,7 +7,7 @@
 locationInfo = {lat=33.4827, lon=-112.0321, offset=-7} -- Phoenix
 --~ locationInfo = {lat=59.9126, lon=10.7399, offset=2} -- Oslo
 poolPumpOnTime = 20 -- hours and fractions: e.g. 20.5 would mean 8:30 PM
-influxServerUrl = "http://home.ecloud.org:8086/write?db=homeauto"
+influxServerUrl = "http://<ip-addr>:<port>/write?db=homeauto"
 
 -- variables
 hoursToSeconds = 3600

@@ -1,0 +1,2 @@
+CREATE RETENTION POLICY "energy_rp" ON "homeauto" DURATION 13w REPLICATION 1
+CREATE CONTINUOUS QUERY "cq_max_hourly" ON "homeauto" RESAMPLE EVERY 30m BEGIN SELECT *, max("current") as "max_current" INTO "current_max_hourly" FROM homeauto.energy_rp.energy GROUP BY time(1h) END
