@@ -23,10 +23,12 @@ end
 require "cs5490-calibration"
 socket.sleep(0.5)
 
+chip.writeRegister(0, 1, 0xEEEC) -- flash the LED: current zero crossing
 chip.sendInstruction(0x15) -- continuous conversion
 socket.sleep(0.9)
 local timestampNS = socket.gettime()*1000000000
 local current = currentScale * chip.readRegisterFixed0dot24(16, 6)
+chip.writeRegister(0, 1, 0xEEEE) -- turn the LED off
 local query = string.format("energy,location=earll2314,device=poolpump current=%f", current)
 local body, code, headers, status = https.request(serverUrl, query)
 out:write(string.format('PUTVAL "pool/exec-pool/current-pump" interval=30 N:%f\n', current))
