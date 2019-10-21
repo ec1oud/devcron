@@ -1,0 +1,10 @@
+#!/usr/bin/lua
+
+conf = io.open("/root/prj/devcron/config/timer.json", "r")
+io.write("Content-Type: application/json\r\n")
+io.write("\r\n")
+if conf then
+	io.write(conf:read("*all"))
+else
+	io.write('{"type":0}')
+end	

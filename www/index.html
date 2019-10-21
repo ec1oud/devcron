@@ -5,10 +5,35 @@
 <meta http-equiv="Cache-Control" content="no-cache" />
 </head>
 <body style="background-color: white">
-<img src="http://pool.local/cgi-bin/graph-week"/><br/>
-<img src="http://pool.local/cgi-bin/graph-year"/><br/>
-<img src="http://pool.local/cgi-bin/graph-10year"/><br/>
+<img src="http://pool.local/cgi-bin/graph-week" width=1091 height=172/><br/>
+<img src="http://pool.local/cgi-bin/graph-year" width=1091 height=172/><br/>
+<img src="http://pool.local/cgi-bin/graph-10year" width=1091 height=172/><br/>
 <hr>
-<a href="/cgi-bin/luci">LuCI - Lua Configuration Interface</a>
+<h1>Pool Pump</h1>
+<form action="/cgi-bin/set-timer-config">
+<input type="radio" name="timer_type" value="automatic" id="timer_automatic"/>Automatic seasonal schedule<br/>
+<input type="radio" name="timer_type" value="fixed" id="timer_fixed"/>Fixed schedule:
+from <input type="time" name="start_time" id="start_time"/>
+to   <input type="time" name="end_time" id="end_time"/><br/><br/>
+<input type="submit" value="Set the timer"/><br/>
+</form>
+<script>
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+	if (this.readyState == 4 && this.status == 200) {
+		var json = JSON.parse(xhttp.responseText)
+		if (json.timer_type === "fixed")
+			document.getElementById("timer_fixed").checked = true
+		else
+			document.getElementById("timer_automatic").checked = true
+		document.getElementById("start_time").value = json.start_time
+		document.getElementById("end_time").value = json.end_time
+	}
+};
+xhttp.open("GET", "/cgi-bin/get-timer-config", true);
+xhttp.send();
+</script>
+<hr>
+<a href="/cgi-bin/luci">LuCI - low-level router configuration</a>
 </body>
 </html>
