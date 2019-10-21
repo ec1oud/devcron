@@ -2,8 +2,8 @@
 require("luci.util")
 
 cmdline = { "rrdtool", "graph" }
-opts = { '/tmp/rrdimg/pool/exec-pool/graph-10year.png', '-a', 'PNG', '-s', 'NOW-315360000', '-w', '1000',
-        '-x', 'MONTH:1:YEAR:1:YEAR:1:157680000:%Y', '-c', 'GRID#DDDDDD',
+opts = { '/tmp/graph-10year.png', '-a', 'PNG', '-s', 'NOW-315360000', '-w', '1000',
+	'-x', 'MONTH:1:YEAR:1:YEAR:1:157680000:%Y', '-c', 'GRID#DDDDDD',
 	'-t', 'pool: Pump current consumption (10 years)', '-v', 'Amperes RMS',
 	'DEF:1current_avg_raw=/mnt/sda1/pool/exec-pool/current-pump.rrd:value:AVERAGE',
 	'CDEF:1current_avg=1current_avg_raw,0,+', 'CDEF:1current_nnl=1current_avg,UN,0,1current_avg,IF',
@@ -20,7 +20,7 @@ outfile:close()
 local rrdtool = io.popen(table.concat(cmdline, " "))
 rrdtool:close()
 
-local png = io.open("/tmp/rrdimg/pool/exec-pool/graph-10year.png", "r")
+local png = io.open("/tmp/graph-10year.png", "r")
 if png then
 	local content = png:read("*all")
 	io.write("Content-Type: image/png\r\n")
