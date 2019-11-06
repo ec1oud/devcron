@@ -35,3 +35,18 @@ decides whether at this time the pump should be running or not, checks the
 state of the relay, changes state if necessary, and when state changes,
 logs it to an influxdb instance.
 
+# Dependencies
+OpenWrt:
+```opkg install collectd-mod-exec kmod-fs-vfat kmod-usb-storage luabitop luasec lua-rs232 luasocket shadow-su```
+- module for collectd to execute arbitrary statistic-providing scripts
+- USB mass storage to be able to write to a USB flash drive instead of internal flash
+- FAT filesystem because your flash drive is probably formatted that way
+- lua bit operations to do the math to convert register values to real numbers
+- luasec to provide https capability to talk to influxdb
+- lua-rs232 to talk to the CS5490 (must be patched to support 600 baud)
+- luasocket for sleep(), gettime() and http
+- su command for testing scripts as the "nobody" user
+
+# Installation
+- Get the USB drive mounted, for RRDtool databases: https://openwrt.org/docs/guide-user/storage/usb-drives-quickstart
+- set up the cron jobs as root: ```crontab -e``` and paste in the jobs from the crontab file here
