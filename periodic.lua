@@ -20,6 +20,7 @@ buttonState = false
 relayState = false
 poolRunTime = 0
 poolPumpOffTime = 6
+poolPumpOffTimeAutomatic = true
 startOfTodayTime = 0
 startOfYesterdayTime = 0
 poolPumpOnTimeToday = 0
@@ -119,6 +120,13 @@ local json = require "luci.jsonc"
 local ok, timerdata = pcall(json.parse, fs.readfile("/root/prj/devcron/config/timer.json"))
 if (ok and type(timerdata) == "table") then
 	poolPumpOnTime = convert_time(timerdata.start_time)
+	poolPumpOffTime = convert_time(timerdata.end_time)
+	if (poolPumpOffTime < poolPumpOnTime) then
+		poolPumpOffTime = poolPumpOffTime + 24
+	end
+	if (timerdata.timer_type == "fixed") then
+		poolPumpOffTimeAutomatic = false
+	end
 end
 
 local nowTime = os.time()
@@ -138,11 +146,13 @@ if (doy ~= dayOfYear) then
 	sunriseHour = timestampToHour(sunrise)
 	sunsetHour = timestampToHour(sunset)
 	lengthHours = - lengthHours
-	print("as of", os.date("%F %H:%M", nowTime), nowHour,
+	print("as of", nowTime, os.date("%F %H:%M", nowTime), nowHour,
 	    "uptime", readUptime(),
 		"sunrise", os.date("%F %H:%M", sunrise), sunriseHour, "sunset", os.date("%F %H:%M", sunset), sunsetHour,
 		"length of day", lengthHours .. ":" .. lengthMinutes, "relay", (relayState and "on" or "off"))
-	poolPumpOffTime = poolOffTimeCalculator(poolPumpOnTime)
+	if (poolPumpOffTimeAutomatic) then
+		poolPumpOffTime = poolOffTimeCalculator(poolPumpOnTime)
+	end
 	poolPumpOnTimeToday = startOfTodayTime + poolPumpOnTime * hoursToSeconds
 	poolPumpOffTimeToday = startOfTodayTime + poolPumpOffTime * hoursToSeconds
 	poolPumpOnTimeYesterday = startOfYesterdayTime + poolPumpOnTime * hoursToSeconds
@@ -150,4 +160,12 @@ if (doy ~= dayOfYear) then
 	print("pool pump on at", poolPumpOnTimeYesterday, poolPumpOnTimeToday, "from now", (poolPumpOnTimeToday - nowTime),
 		"off at", poolPumpOffTimeYesterday, poolPumpOffTimeToday, "from now", (poolPumpOffTimeToday - nowTime), "runtime", poolPumpOffTimeToday - poolPumpOnTimeToday)
 end
-setRelay((nowTime > poolPumpOnTimeYesterday and nowTime < poolPumpOffTimeYesterday) or (nowTime > poolPumpOnTimeToday and nowTime < poolPumpOffTimeToday))
+
+local ok, overridedata = pcall(json.parse, fs.readfile("/root/prj/devcron/config/override.json"))
+if (ok and type(overridedata) == "table" and nowTime >= overridedata.start_time and nowTime < overridedata.start_time + overridedata.override_time * 60) then
+	print("override", overridedata.override_state, "from", overridedata.start_time, "for", overridedata.override_time, "min")
+	setRelay(overridedata.override_state == "on")
+else
+	setRelay((nowTime > poolPumpOnTimeYesterday and nowTime < poolPumpOffTimeYesterday) or (nowTime > poolPumpOnTimeToday and nowTime < poolPumpOffTimeToday))
+end
+

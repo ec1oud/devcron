@@ -1,0 +1,32 @@
+#!/usr/bin/lua
+require("luci.sys")
+require("luci.jsonc")
+
+function queryToTable(s)
+	result = {};
+	for match in (s..'&'):gmatch("(.-)"..'&') do
+	local eq_from, eq_to = string.find(match, '=', 1)
+	local val = string.sub(match, eq_from+1)
+	val = val:gsub("%%3A", ":")
+	result[string.sub(match, 1, eq_from-1)] = val
+	end
+	return result;
+end
+
+conf = io.open("/root/prj/devcron/config/override.json", "w+")
+local fields = queryToTable(luci.sys.getenv("QUERY_STRING"))
+fields["override_time"] = tonumber(fields["override_time"])
+fields["start_time"] = os.time()
+fields["start_date"] = os.date("%F %H:%M")
+conf:write(luci.jsonc.stringify(fields))
+conf:close()
+local relayf = assert(io.open("/sys/class/gpio/relay1/value", "w"))
+local stateString = (fields["override_state"] == "on" and "1") or "0"
+relayf:write(stateString)
+relayf:close()
+io.write("Content-Type: text/html\r\n\r\n")
+io.write('<html><head><meta http-equiv="refresh" content="0; URL=/"/></head><body>redirecting...<a href="http://pool.local">click here if necessary</a></body></html>')
+-- io.write("\r\n")
+-- print(luci.jsonc.stringify(luci.sys.getenv()))
+-- print(luci.jsonc.stringify(fields))
+

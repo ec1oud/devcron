@@ -33,6 +33,13 @@ xhttp.onreadystatechange = function() {
 xhttp.open("GET", "/cgi-bin/get-timer-config", true);
 xhttp.send();
 </script>
+<form action="/cgi-bin/set-timer-override">
+<h2>Temporary override</h2>
+For the next <input type="number" name="override_time" id="override_time" value="30"/> minutes, turn the pump<br/>
+<input type="radio" name="override_state" value="on" id="on"/>On<br/>
+<input type="radio" name="override_state" value="off" id="off"/>Off<br/>
+<input type="submit" value="Override the timer"/><br/>
+</form>
 <hr>
 <a href="/cgi-bin/luci">LuCI - low-level router configuration</a>
 </body>
