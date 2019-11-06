@@ -1,3 +1,2 @@
 * * * * *       cd /root/prj/devcron && ./periodic.lua
-0 0 * * *       mv /tmp/periodic.log /tmp/periodic.log.bak
-
+23 59 * * *     /root/prj/devcron/logrotate

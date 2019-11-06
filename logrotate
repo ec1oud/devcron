@@ -1,0 +1,4 @@
+#!/bin/sh
+destfile="/mnt/sda1/logs/`date -I`.log"
+echo $destfile
+mv /var/log/periodic.log $destfile
