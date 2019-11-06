@@ -11,10 +11,10 @@
 <hr>
 <h1>Pool Pump</h1>
 <form action="/cgi-bin/set-timer-config">
+Starting daily from <input type="time" name="start_time" id="start_time"/><br/>
 <input type="radio" name="timer_type" value="automatic" id="timer_automatic"/>Automatic seasonal schedule<br/>
 <input type="radio" name="timer_type" value="fixed" id="timer_fixed"/>Fixed schedule:
-from <input type="time" name="start_time" id="start_time"/>
-to   <input type="time" name="end_time" id="end_time"/><br/><br/>
+until   <input type="time" name="end_time" id="end_time"/><br/><br/>
 <input type="submit" value="Set the timer"/><br/>
 </form>
 <script>

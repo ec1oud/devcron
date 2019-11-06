@@ -101,11 +101,25 @@ local function sameMinute(hours1, hours2)
 	return math.abs(hours1 - hours2) < 0.017
 end
 
+-- convert from a string like 20:04 to fractional hours like 20.066667
+function convert_time(s)
+	local colon_from, colon_to = string.find(s, ':', 1)
+	return tonumber(string.sub(s, 0, colon_from - 1)) + tonumber(string.sub(s, colon_to+1)) / 60.0;
+end
+
 -- main
 local logfile = io.open("/var/log/periodic.log", "a")
 io.output(logfile)
 lustrous = require "lustrous"
 relayState = readGpioState("relay1")
+
+local fs = require "nixio.fs"
+local json = require "luci.jsonc"
+
+local ok, timerdata = pcall(json.parse, fs.readfile("/root/prj/devcron/config/timer.json"))
+if (ok and type(timerdata) == "table") then
+	poolPumpOnTime = convert_time(timerdata.start_time)
+end
 
 local nowTime = os.time()
 local now = os.date("*t", nowTime)
