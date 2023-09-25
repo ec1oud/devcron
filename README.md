@@ -35,6 +35,14 @@ decides whether at this time the pump should be running or not, checks the
 state of the relay, changes state if necessary, and when state changes,
 logs it to an influxdb instance.
 
+shelly-power.lua just reads the power usage from a
+[Shelly Plug](https://kb.shelly.cloud/knowledge-base/shelly-plug-s)
+(or another in that family of devices), and shelly-watchdog.lua
+uses a Shelly for a watchdog: verify that a machine is running
+(and optionally verify that its web server is ok) else cycle its power
+(assuming you have configured its BIOS setting to automatically
+power on when power is restored after loss).
+
 # Dependencies
 OpenWrt:
 ```opkg install collectd-mod-exec kmod-fs-vfat kmod-usb-storage luabitop luasec lua-rs232 luasocket shadow-su```
